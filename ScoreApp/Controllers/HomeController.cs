@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using ScoreApp.Models;
 using System.Web.Mvc;
+
 
 namespace ScoreApp.Controllers
 {
     public class HomeController : Controller
     {
+        Scores _list = new Scores();
+
         public ActionResult Index()
         {
             return View();
@@ -15,16 +15,28 @@ namespace ScoreApp.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
-
+            ViewBag.Message = "";
             return View();
         }
 
         public ActionResult Contact()
         {
-            ViewBag.Message = "Your contact page.";
-
+            ViewBag.Message = "Here you can find my contact information.";
             return View();
+        }
+
+        public ActionResult List()
+        {
+            Scores lst = populateScores();
+            return View(lst);
+
+        }
+
+        private Scores populateScores()
+        {
+            DL oDL = new DL();
+            Scores lst = oDL.GetScores();
+            return lst;
         }
     }
 }
