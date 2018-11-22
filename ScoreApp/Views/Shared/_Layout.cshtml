@@ -6,6 +6,8 @@
     <title>@ViewBag.Title - ScoreApp</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.29.1/dist/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@7.29.1/dist/sweetalert2.css">
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -32,12 +34,21 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - No files were harmed while constructing this app... ;)</p>
+            <p>&copy;@DateTime.Now.Year - Tomas Nybondas - No files were harmed while constructing this app... ;)</p>
         </footer>
     </div>
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
+
+    <script type="text/javascript">
+            
+     $( document ).on('keydown', function (e) {
+        if (e.keyCode === 27) { // ESC
+            toggleDiv("addScore", false);
+        }
+    });
+    </script>
 </body>
 </html>

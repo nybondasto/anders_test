@@ -1,0 +1,137 @@
+﻿@model ScoreApp.Models.Scores
+@{
+    ViewBag.Title = "List of scores";
+    string sortOrder = ViewBag.sortOrder.ToString();
+}
+
+<h2>Wall of fame</h2>
+<hr />
+<div class="scoreDiv">Number of scores: @Model.scores.Count()</div>
+<div class="buttonDiv"><button id="btnNewScore" type="button" onclick='toggleDiv("addScore", true);'>Add new score</button></div>
+<hr />
+
+@Html.AntiForgeryToken()
+
+    <div id="addScore" style="display: none;">
+        <span class="title">Add New Score</span>
+        <div class="addContent">
+            <span class="hint">Write the name of the player and his/her score<br />and press "Save". Hit ESC to close this dialog.</span>
+            <span class="labeli">Player:</span><input class="inputField" type="text" id="txtPlayer" /><br />
+            <span class="labeli">Score:</span><input class="inputField" type="text" id="txtScore" />
+            <button id="btnSave" class="btnSave" onclick="saveScore();">Save</button>
+        </div>
+    </div>
+<div>
+<div id="overlay" class="overlay" style="display: none;"></div>
+    <table class="scoreTable">
+        <thead>
+            <tr class="scoreHead">
+                <th onclick="sortScores('@ViewBag.sortOrder');">Score</th>
+                <th>Player</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in @Model.scores)
+            {
+                <tr class="scoreRow">
+                    <td class="col0">@item.score.ToString()</td>
+                    <td>@item.playerName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<script type="text/javascript">
+
+
+
+    function toggleDiv(div, visible) {
+
+        //-- Empty textboxes
+        $("#txtPlayer").val("");
+        $("#txtScore").val("");
+
+        //-- Show / hide input dialog box
+        var obj = document.getElementById(div);
+        var style = "none";
+        if (visible) {
+            style = "block";
+        }
+        obj.style.display = style; 
+
+        //-- Show / hide semi-transparent overlay
+        var ol = document.getElementById("overlay");
+        ol.style.display = style;
+
+    }
+
+
+    function saveScore() {
+        var sUrl = "./addScore";
+
+        var playerName = $("#txtPlayer").val();
+        var score = $("#txtScore").val();
+        event.preventDefault();
+
+        //-- Fire away ajax-request
+        $.ajax({
+            method: "POST",
+            url: sUrl,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("XSRF-TOKEN",
+                    $('input:hidden[name="__RequestVerificationToken"]').val());
+            },
+            data: {
+                player: playerName,
+                score: score
+            },
+            error: function () {
+                //-- Hide input dialog and show error messagebox
+                toggleDiv("addScore", false);
+                swal({
+                    title: "Error",
+                    text: "Error saving score! Check the values!",
+                    type: "error",
+                    confirmButtonText: "Okay!"
+                });
+            }
+        })
+            .done(function () {
+                //-- Saving score success, show messagebox
+                toggleDiv("addScore", false);
+                swal({
+                    title: 'Score saved!',
+                    text: 'New score was saved successfully',
+                    type: 'success',
+                    confirmButtonText: 'Allright!'
+                })
+                    .then((result) => {
+                        if (result.value) {
+                            document.location.href = "./List";
+                        }
+                    });
+            });
+    }
+
+
+
+    function sortScores(sortOrder) {
+
+        var sUrl = "./List";
+
+        $.ajax({
+            type: "POST",
+            url: sUrl,
+            dataType: "json",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("XSRF-TOKEN",
+                    $('input:hidden[name="__RequestVerificationToken"]').val());
+            },
+            data: {
+                order: sortOrder
+            }
+        });
+    }
+</script>

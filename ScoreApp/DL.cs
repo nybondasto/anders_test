@@ -1,5 +1,6 @@
 ﻿using ScoreApp.Models;
 using System.Data.SQLite;
+using System.Threading.Tasks;
 
 namespace ScoreApp
 {
@@ -16,9 +17,9 @@ namespace ScoreApp
 
 
         //-- Retrieve scores from database as List of Score-objects
-        public Scores GetScores()
+        public Scores GetScores(string order)
         {
-            string sql = "select id, playerName, score from scores order by score desc";
+            string sql = "select id, playerName, score from scores order by score " + order;
             SQLiteConnection conn = connect();
 
             using (conn)
@@ -48,6 +49,32 @@ namespace ScoreApp
                     reader.Close();
                     return null;
                 }
+            }
+        }
+
+
+
+        public async Task<bool> AddScore(Score s)
+        {
+            int numInserted;
+            string sql = "INSERT INTO scores(playerName, score) VALUES('" + s.playerName + "'," + s.score + ")";
+            SQLiteConnection conn = connect();
+
+            using (var transaction = conn.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                numInserted = await cmd.ExecuteNonQueryAsync();
+                transaction.Commit();
+            }
+            conn.Close();
+
+            if (numInserted == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }
