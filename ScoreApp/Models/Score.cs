@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ScoreApp.Models
 {
     //-- Model object to hold players score
-    public class Score : IEnumerable
+    public class Score
     {
         public int id { get; set; }
         public string playerName { get; set; }
@@ -21,10 +20,10 @@ namespace ScoreApp.Models
             score = playerScore;
         }
 
-        public IEnumerator GetEnumerator()
-        {
-            throw new System.NotImplementedException();
-        }
+        //public IEnumerator GetEnumerator()
+        //{
+        //    return (IEnumerator)this;
+        //}
     }
 
 

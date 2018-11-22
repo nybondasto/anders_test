@@ -12,6 +12,7 @@ namespace ScoreApp.Controllers
 
         public ActionResult Index()
         {
+            TempData["sortOrder"] = "DESC";
             return View();
         }
 
@@ -32,7 +33,6 @@ namespace ScoreApp.Controllers
         //-- Default view for score listing
         public ActionResult List()
         {
-            ViewBag.sortOrder = "DESC";
             Scores lst = populateScores();
             return View(lst);
         }
@@ -40,15 +40,15 @@ namespace ScoreApp.Controllers
 
         //-- Method for sorting scores
         [HttpPost]
-        public ActionResult List(string order)
+        public JsonResult List(string order)
         {
             Scores lst = populateScores(order);
             if (order == "DESC")
-                ViewBag.sortOrder = "ASC";
+                TempData["sortOrder"] = "ASC";
             else
-                ViewBag.sortOrder = "DESC";
+                TempData["sortOrder"] = "DESC";
 
-            return View(lst);
+            return Json(lst);
         }
 
 
@@ -73,8 +73,8 @@ namespace ScoreApp.Controllers
             try
             {
                 bOk = await oDL.AddScore(s);
-                sc = populateScores();
-                return View("List", sc);  //RedirectToAction("List", "Home");
+                sc = populateScores(TempData["sortOrder"].ToString());
+                return View("List", sc);
             }
             catch (Exception ex)
             {

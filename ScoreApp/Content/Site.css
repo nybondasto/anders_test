@@ -35,7 +35,7 @@ textarea {
 }
 
 .col0 {
-    width: 80px;
+    width: 130px;
 }
 
 .scoreHead {
@@ -47,6 +47,7 @@ textarea {
 
 .scoreRow {
     height: 30px;
+    border-bottom: lightgrey;
 }
 
 .scoreRow:hover {
@@ -142,4 +143,8 @@ textarea {
 
 .addContent {
     padding: 20px;
+}
+
+a.sortlink { 
+    color: white !important;
 }

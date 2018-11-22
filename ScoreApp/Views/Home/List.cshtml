@@ -1,46 +1,65 @@
 ﻿@model ScoreApp.Models.Scores
+@using ScoreApp.Models;
 @{
     ViewBag.Title = "List of scores";
-    string sortOrder = ViewBag.sortOrder.ToString();
+
+    if (TempData["sortOrder"] != null)
+    {
+        if (TempData["sortOrder"].ToString() == "ASC")
+        {
+            TempData["sortOrder"] = "DESC";
+        }
+        else
+        {
+            TempData["sortOrder"] = "ASC";
+        }
+    }
+    else
+    {
+        TempData["sortOrder"] = "ASC";
+    }
+
+    string sortOrder = TempData["sortOrder"].ToString();
 }
 
 <h2>Wall of fame</h2>
 <hr />
-<div class="scoreDiv">Number of scores: @Model.scores.Count()</div>
-<div class="buttonDiv"><button id="btnNewScore" type="button" onclick='toggleDiv("addScore", true);'>Add new score</button></div>
-<hr />
 
 @Html.AntiForgeryToken()
 
-    <div id="addScore" style="display: none;">
-        <span class="title">Add New Score</span>
-        <div class="addContent">
-            <span class="hint">Write the name of the player and his/her score<br />and press "Save". Hit ESC to close this dialog.</span>
-            <span class="labeli">Player:</span><input class="inputField" type="text" id="txtPlayer" /><br />
-            <span class="labeli">Score:</span><input class="inputField" type="text" id="txtScore" />
-            <button id="btnSave" class="btnSave" onclick="saveScore();">Save</button>
-        </div>
+<div id="addScore" style="display: none;">
+    <span class="title">Add New Score</span>
+    <div class="addContent">
+        <span class="hint">Write the name of the player and her/his score<br />and press "Save". Hit ESC to close this dialog.</span>
+        <span class="labeli">Player:</span><input class="inputField" type="text" id="txtPlayer" /><br />
+        <span class="labeli">Score:</span><input class="inputField" type="text" id="txtScore" />
+        <button id="btnSave" class="btnSave" onclick="saveScore();">Save</button>
     </div>
+</div>
 <div>
-<div id="overlay" class="overlay" style="display: none;"></div>
-    <table class="scoreTable">
+    <div id="overlay" class="overlay" style="display: none;"></div>
+    <table id="scoreTable" class="scoreTable">
         <thead>
             <tr class="scoreHead">
-                <th onclick="sortScores('@ViewBag.sortOrder');">Score</th>
+                <th onclick='sortScores("@sortOrder");'>Score ▼</th>
                 <th>Player</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach (var item in @Model.scores)
-            {
-                <tr class="scoreRow">
-                    <td class="col0">@item.score.ToString()</td>
-                    <td>@item.playerName</td>
-                </tr>
-            }
-        </tbody>
+        @foreach (Score item in Model.scores)
+        {
+            <tr class="scoreRow">
+                <td class="col0">
+                    @item.score
+                </td>
+                <td>
+                    @item.playerName
+                </td>
+            </tr>
+        }
     </table>
 </div>
+<div class="scoreDiv">Number of scores: @Model.scores.Count()</div>
+<div class="buttonDiv"><button id="btnNewScore" type="button" onclick='toggleDiv("addScore", true);'>Add new score</button></div>
 
 
 <script type="text/javascript">
@@ -59,7 +78,7 @@
         if (visible) {
             style = "block";
         }
-        obj.style.display = style; 
+        obj.style.display = style;
 
         //-- Show / hide semi-transparent overlay
         var ol = document.getElementById("overlay");
@@ -73,7 +92,18 @@
 
         var playerName = $("#txtPlayer").val();
         var score = $("#txtScore").val();
-        event.preventDefault();
+
+        if (score < 0) {
+            toggleDiv("addScore", false);
+            swal({
+                title: "Error",
+                text: "Score can't be a negative number!",
+                type: "error",
+                confirmButtonText: "Okay!"
+            });
+            return;
+        }
+            
 
         //-- Fire away ajax-request
         $.ajax({
@@ -92,7 +122,7 @@
                 toggleDiv("addScore", false);
                 swal({
                     title: "Error",
-                    text: "Error saving score! Check the values!",
+                    text: "Error saving score! Check the values before saving!",
                     type: "error",
                     confirmButtonText: "Okay!"
                 });
@@ -120,6 +150,9 @@
     function sortScores(sortOrder) {
 
         var sUrl = "./List";
+        var tr = "";
+        var t = "";
+        var indicator = "";
 
         $.ajax({
             type: "POST",
@@ -131,6 +164,35 @@
             },
             data: {
                 order: sortOrder
+            },
+            success: function (json) {
+                $('#scoreTable').empty();
+
+                if (sortOrder === "ASC") {
+                    nextSortOrder = "DESC";
+                    indicator = "▼";
+                }
+                else {
+                    nextSortOrder = "ASC";
+                    indicator = "▲";
+                }
+
+                t = $('<thead>');
+                t.append('<tr class="scoreHead"><th style="width: 130px;"><a style="color:white !important" onclick="sortScores(\'' + nextSortOrder + '\');">Score ' + indicator + '</a></th><th>Player</th></tr>');
+                t.append('</thead>');
+
+                $('#scoreTable').append(t);
+
+                for (var i = 0; i < json.scores.length; i++) {
+                    tr = $("<tr  class='scoreRow'>");
+                    tr.append("<td class='col0'>" + json.scores[i].score + "</td>");
+                    tr.append("<td>" + json.scores[i].playerName + "</td>");
+                    tr.append("</tr>");
+
+                    $('#scoreTable').append("<tbody>");
+                    $('#scoreTable').append(tr);
+                    $('#scoreTable').append("</tbody>");
+                }
             }
         });
     }
